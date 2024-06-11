@@ -1,155 +1,151 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Form, Input, Popconfirm, Table } from 'antd';
-const EditableContext = React.createContext(null);
-const EditableRow = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-};
+import React, { useEffect, useState } from 'react';
+import { Flex, InputNumber, Modal, Typography, Form, Input, Table, Breadcrumb } from 'antd';
+import axios from 'axios';
+import FormItem from 'antd/es/form/FormItem';
+
 const EditableCell = ({
-  title,
-  editable,
-  children,
+  editing,
   dataIndex,
+  title,
+  inputType,
   record,
-  handleSave,
+  index,
+  children,
   ...restProps
 }) => {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
-  const form = useContext(EditableContext);
-  useEffect(() => {
-    if (editing) {
-      inputRef.current?.focus();
-    }
-  }, [editing]);
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
-    });
-  };
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-      toggleEdit();
-      handleSave({
-        ...record,
-        ...values,
-      });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  };
-  let childNode = children;
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{
-          margin: 0,
-        }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
-  }
-  return <td {...restProps}>{childNode}</td>;
+  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+  return (
+    <td {...restProps}>
+      {editing ? (
+        <FormItem
+          name={dataIndex}
+          style={{ margin: 0 }}
+          rules={[{ required: true, message: `Please Input ${title}!` }]}
+        >
+          {inputNode}
+        </FormItem>
+      ) : (
+        children
+      )}
+    </td>
+  );
 };
+
+const items = [
+  {
+    title: 'Home',
+    href: '/',  // Optional: you can also add a link if needed
+  },
+  {
+    title: 'List',
+    href: '/list',
+  },
+  {
+    title: 'App',
+  },
+];
+
 const Categories = () => {
-  const [dataSource, setDataSource] = useState([
-    {
-      key: '0',
-      name: 'Edward King 0',
-      age: '32',
-      address: 'London, Park Lane no. 0',
-    },
-    {
-      key: '1',
-      name: 'Edward King 1',
-      age: '32',
-      address: 'London, Park Lane no. 1',
-    },
-  ]);
-  const [count, setCount] = useState(2);
-  const handleDelete = (key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
+  const [form] = Form.useForm();
+  const [data, setData] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const getCategories = async () => {
+      try {
+        const response = await axios.get("https://ecommerce-backend-fawn-eight.vercel.app/api/categories");
+        setData(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getCategories();
+  }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`https://ecommerce-backend-fawn-eight.vercel.app/api/categories/${id}`);
+      setData(data.filter((item) => item._id !== id));
+    } catch (error) {
+      console.log(error);
+    }
   };
-  const defaultColumns = [
+
+  const showModal = (category) => {
+    setSelectedCategory(category);
+    setIsModalOpen(true);
+  };
+
+  const handleOk = async () => {
+    setIsModalOpen(false);
+    try {
+      const response = await axios.put(
+        `https://ecommerce-backend-fawn-eight.vercel.app/api/categories/${selectedCategory._id}`,
+        {
+          name: selectedCategory.name,
+          image: selectedCategory.image,
+        }
+      );
+      setData(data.map((item) => (item._id === selectedCategory._id ? response.data : item)));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCategoryChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedCategory((prevCategory) => ({
+      ...prevCategory,
+      [name]: value,
+    }));
+  };
+
+  const columns = [
     {
-      title: 'name',
-      dataIndex: 'name',
-      width: '30%',
+      title: "Image",
+      dataIndex: "image",
+      width: "25%",
+      editable: false,
+      render: (imgUrl) => {
+        return <img src={imgUrl} alt={imgUrl} width={100} />;
+      },
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      width: "25%",
       editable: true,
     },
     {
-      title: 'age',
-      dataIndex: 'age',
+      title: "Edit",
+      dataIndex: 'editOperation',
+      render: (_, record) => {
+        return (
+          <Typography.Link onClick={() => showModal(record)}>
+            Edit
+          </Typography.Link>
+        );
+      },
     },
     {
-      title: 'address',
-      dataIndex: 'address',
-    },
-    {
-      title: 'operation',
-      dataIndex: 'operation',
-      render: (_, record) =>
-        dataSource.length >= 1 ? (
-          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-            <a>Delete</a>
-          </Popconfirm>
-        ) : null,
+      title: "Delete",
+      dataIndex: "deleteOperation",
+      render: (_, record) => {
+        return (
+          <Typography.Link onClick={() => handleDelete(record._id)}>
+            Delete
+          </Typography.Link>
+        );
+      },
     },
   ];
-  const handleAdd = () => {
-    const newData = {
-      key: count,
-      name: `Edward King ${count}`,
-      age: '32',
-      address: `London, Park Lane no. ${count}`,
-    };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
-  };
-  const handleSave = (row) => {
-    const newData = [...dataSource];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
-    });
-    setDataSource(newData);
-  };
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
-  };
-  const columns = defaultColumns.map((col) => {
+
+  const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
     }
@@ -157,32 +153,59 @@ const Categories = () => {
       ...col,
       onCell: (record) => ({
         record,
-        editable: col.editable,
+        inputType: col.dataIndex === "age" ? "number" : "text",
         dataIndex: col.dataIndex,
         title: col.title,
-        handleSave,
+        editing: true,
       }),
     };
   });
+
+  <Breadcrumb.Item items={items}/> 
+
   return (
-    <div>
-      <Button
-        onClick={handleAdd}
-        type="primary"
-        style={{
-          marginBottom: 16,
-        }}
-      >
-        Add a row
-      </Button>
+    <Form form={form} component={false}>
       <Table
-        components={components}
-        rowClassName={() => 'editable-row'}
+        components={{
+          body: {
+            cell: EditableCell,
+          },
+        }}
         bordered
-        dataSource={dataSource}
-        columns={columns}
+        dataSource={data}
+        columns={mergedColumns}
+        rowClassName="editable-row"
+        rowKey="_id"
       />
-    </div>
+      <Modal
+        title="Edit Category"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <form>
+          <Flex gap="middle" vertical>
+            <div>
+              <Input
+                placeholder="name"
+                value={selectedCategory?.name}
+                onChange={handleCategoryChange}
+                name="name"
+              />
+            </div>
+            <div>
+              <Input
+                placeholder="image"
+                value={selectedCategory?.image}
+                onChange={handleCategoryChange}
+                name="image"
+              />
+            </div>
+          </Flex>
+        </form>
+      </Modal>
+    </Form>
   );
 };
+
 export default Categories;

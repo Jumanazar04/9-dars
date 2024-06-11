@@ -31,7 +31,7 @@ const items = [
 const GeneralLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
   return (
     <Layout
