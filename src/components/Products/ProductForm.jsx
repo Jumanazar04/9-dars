@@ -1,7 +1,7 @@
 import { Button, Flex, Input } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const ProductForm = () => {
+const ProductForm = ({onSubmit}) => {
     const [prodForm, setProdFrom] = useState({
         title: "",
         subtitle: "",
@@ -21,8 +21,24 @@ const ProductForm = () => {
     }
 
     const handleSubmit = () => {
-        onsubmit(prodForm)
+        onSubmit(prodForm)
     }
+
+    useEffect(() => {
+        
+        return () => {
+            setProdFrom({
+                title: "",
+                subtitle: "",
+                description: "",
+                color: '',
+                price: '',
+                rate: '',
+                size: '',
+                image: ''
+            })
+        };
+    }, []);
 
     return (
         <div>

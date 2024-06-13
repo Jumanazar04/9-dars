@@ -1,6 +1,7 @@
 import { Button, Modal } from 'antd';
 import React, { useState } from 'react';
 import ProductForm from './ProductForm';
+import { createProduct } from '../api/createProduct';
 
 const CraeteProduct = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,7 +18,11 @@ const CraeteProduct = () => {
       setIsModalOpen(false);
     };
 
-    const handleCreate = (prodForm) => {
+    const handleCreate = async (prodForm) => {
+        const response = await createProduct(prodForm);
+        if(response){
+            alert("Succesfuly Created")
+        }
         console.log(prodForm);
     }
     return (
