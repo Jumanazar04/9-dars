@@ -1,4 +1,4 @@
-import { Input } from 'antd';
+import { Button, Flex, Input } from 'antd';
 import React, { useState } from 'react';
 
 const ProductForm = () => {
@@ -12,17 +12,29 @@ const ProductForm = () => {
         size: '',
         image: ''
     });
-    const handleChange = (e) => {}
+
+    const handleChange = (e) => {
+        const {name, value} = e.target;
+        setProdFrom((prevForm) => ({ 
+            ...prevForm, [name]: value
+        }))
+    }
+
+    const handleSubmit = () => {
+        onsubmit(prodForm)
+    }
+
     return (
         <div>
             <form action="">
+                <Flex gap="middle" vertical>
                 <div>
                     <Input 
                         placeholder="Title" 
                         name='title'
                         value={prodForm.title}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -30,7 +42,7 @@ const ProductForm = () => {
                         name='subtitle'
                         value={prodForm.subtitle}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -38,7 +50,7 @@ const ProductForm = () => {
                         name='description'
                         value={prodForm.description}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -46,7 +58,7 @@ const ProductForm = () => {
                         name='color'
                         value={prodForm.color}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -54,7 +66,7 @@ const ProductForm = () => {
                         name='price'
                         value={prodForm.price}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -62,7 +74,7 @@ const ProductForm = () => {
                         name='rate'
                         value={prodForm.rate}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -70,7 +82,7 @@ const ProductForm = () => {
                         name='size'
                         value={prodForm.size}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
                 <div>
                     <Input 
@@ -78,8 +90,10 @@ const ProductForm = () => {
                         name='image'
                         value={prodForm.image}
                         onChange={handleChange}
-                    />;
+                    />
                 </div>
+                <Button onClick={handleSubmit} type='primary'>Submit</Button>
+                </Flex>
             </form>
         </div>
     );

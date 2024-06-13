@@ -16,13 +16,17 @@ const CraeteProduct = () => {
     const handleCancel = () => {
       setIsModalOpen(false);
     };
+
+    const handleCreate = (prodForm) => {
+        console.log(prodForm);
+    }
     return (
         <div>
             <Button onClick={showModal} type='primary'>
                 Create
             </Button>
             <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                <ProductForm />
+                <ProductForm onSubmit={handleCreate}/>
             </Modal>
         </div>
     );
