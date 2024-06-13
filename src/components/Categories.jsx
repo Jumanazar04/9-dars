@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Flex, InputNumber, Modal, Typography, Form, Input, Table, Breadcrumb } from 'antd';
+import { Flex, InputNumber, Modal, Typography, Form, Input, Table, Button,  } from 'antd';
 import axios from 'axios';
 import FormItem from 'antd/es/form/FormItem';
 
@@ -31,19 +31,7 @@ const EditableCell = ({
   );
 };
 
-const items = [
-  {
-    title: 'Home',
-    href: '/',  // Optional: you can also add a link if needed
-  },
-  {
-    title: 'List',
-    href: '/list',
-  },
-  {
-    title: 'App',
-  },
-];
+
 
 const Categories = () => {
   const [form] = Form.useForm();
@@ -55,6 +43,7 @@ const Categories = () => {
     const getCategories = async () => {
       try {
         const response = await axios.get("https://ecommerce-backend-fawn-eight.vercel.app/api/categories");
+        console.log(response.data);
         setData(response.data);
       } catch (error) {
         console.log(error);
@@ -161,10 +150,13 @@ const Categories = () => {
     };
   });
 
-  <Breadcrumb.Item items={items}/> 
+  
 
   return (
     <Form form={form} component={false}>
+      <Button>
+        Create App
+      </Button>
       <Table
         components={{
           body: {
